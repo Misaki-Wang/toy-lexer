@@ -25,12 +25,14 @@ def main():
     
     # Parse the regular expression into an NFA
     nfa = regex.parse(args.regex)
+    # Print attributes for debugging
+    # print(f"NFA attributes: {nfa.__dict__}")
     
     if args.conversion in ['minidfa', 'dfa', 'nfa']:
         # Save the NFA to a DOT file if requested
         if args.dot:
             nfa_dot_path = get_dot_file_path('nfa.dot')
-            print(nfa_dot_path)
+            # nfa.dump(open(nfa_dot_path, 'w'))
             dump(nfa, nfa_dot_path)
         
         if args.conversion in ['minidfa', 'dfa']:
@@ -40,6 +42,7 @@ def main():
             # Save the DFA to a DOT file if requested
             if args.dot:
                 dfa_dot_path = get_dot_file_path('dfa.dot')
+                # dfa.dump(open(dfa_dot_path, 'w'))
                 dump(dfa, dfa_dot_path)
             
             if args.conversion == 'minidfa':
@@ -49,6 +52,7 @@ def main():
                 # Save the minimized DFA to a DOT file if requested
                 if args.dot:
                     mindfa_dot_path = get_dot_file_path('mindfa.dot')
+                    # mindfa.dump(open(mindfa_dot_path, 'w'))
                     dump(mindfa, mindfa_dot_path)
         
         # Optionally convert DOT files to PNG files
