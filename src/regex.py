@@ -1,5 +1,4 @@
 from .fsa import FSA
-
 # simple: char | range | '(' regexp ')'
 #
 # repeating: simple '*'

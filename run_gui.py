@@ -52,67 +52,103 @@ def display_images():
     for widget in image_frame.winfo_children():
         widget.destroy()
 
+    images = []
+    labels = []
+
     if os.path.exists('res/img/nfa.png'):
-        nfa_label = ttk.Label(image_frame, text="NFA:")
-        nfa_label.grid(row=0, column=0, sticky=tk.W)
+        nfa_label = ttk.Label(image_frame, text="NFA:", style="TLabel")
+        nfa_label.grid(row=0, column=0, sticky=tk.W, padx=5, pady=5)
+        labels.append(nfa_label)
         nfa_img = Image.open('res/img/nfa.png')
         nfa_img = ImageTk.PhotoImage(nfa_img)
         nfa_img_label = tk.Label(image_frame, image=nfa_img)
         nfa_img_label.image = nfa_img
-        nfa_img_label.grid(row=0, column=1, pady=5)
+        nfa_img_label.grid(row=0, column=1, padx=5, pady=5)
+        images.append(nfa_img_label)
 
     if os.path.exists('res/img/dfa.png'):
-        dfa_label = ttk.Label(image_frame, text="DFA:")
-        dfa_label.grid(row=1, column=0, sticky=tk.W)
+        dfa_label = ttk.Label(image_frame, text="DFA:", style="TLabel")
+        dfa_label.grid(row=1, column=0, sticky=tk.W, padx=5, pady=5)
+        labels.append(dfa_label)
         dfa_img = Image.open('res/img/dfa.png')
         dfa_img = ImageTk.PhotoImage(dfa_img)
         dfa_img_label = tk.Label(image_frame, image=dfa_img)
         dfa_img_label.image = dfa_img
-        dfa_img_label.grid(row=1, column=1, pady=5)
+        dfa_img_label.grid(row=1, column=1, padx=5, pady=5)
+        images.append(dfa_img_label)
 
     if os.path.exists('res/img/mindfa.png'):
-        mindfa_label = ttk.Label(image_frame, text="Minimized DFA:")
-        mindfa_label.grid(row=2, column=0, sticky=tk.W)
+        mindfa_label = ttk.Label(image_frame, text="Minimized DFA:", style="TLabel")
+        mindfa_label.grid(row=2, column=0, sticky=tk.W, padx=5, pady=5)
+        labels.append(mindfa_label)
         mindfa_img = Image.open('res/img/mindfa.png')
         mindfa_img = ImageTk.PhotoImage(mindfa_img)
         mindfa_img_label = tk.Label(image_frame, image=mindfa_img)
         mindfa_img_label.image = mindfa_img
-        mindfa_img_label.grid(row=2, column=1, pady=5)
+        mindfa_img_label.grid(row=2, column=1, padx=5, pady=5)
+        images.append(mindfa_img_label)
+
+    for label, img in zip(labels, images):
+        label.grid(row=labels.index(label), column=0, sticky=tk.W, padx=5, pady=5)
+        img.grid(row=images.index(img), column=1, padx=5, pady=5)
 
 # Create the main window
 root = tk.Tk()
 root.title("Automata Generator")
+
+# Style configuration
+style = ttk.Style()
+style.configure("TButton", padding=6, relief="flat", background="#ccc", borderwidth=1, focusthickness=3, focuscolor='none')
+style.map("TButton", background=[('active', '#005f87'), ('!active', '#ccc')], relief=[('pressed', 'groove'), ('!pressed', 'flat')])
+
+style.configure("TLabel", font=("Helvetica", 12), padding=5)
 
 # Create the main frame
 mainframe = ttk.Frame(root, padding="10 10 20 20")
 mainframe.grid(row=0, column=0, sticky=(tk.W, tk.E, tk.N, tk.S))
 
 # Add widgets
-regex_label = ttk.Label(mainframe, text="Regular Expression:")
+regex_label = ttk.Label(mainframe, text="Regular Expression:", style="TLabel")
 regex_label.grid(row=0, column=0, sticky=tk.W)
 regex_entry = ttk.Entry(mainframe, width=30)
 regex_entry.grid(row=0, column=1, sticky=(tk.W, tk.E))
 
-conversion_label = ttk.Label(mainframe, text="Conversion Type:")
+conversion_label = ttk.Label(mainframe, text="Conversion Type:", style="TLabel")
 conversion_label.grid(row=1, column=0, sticky=tk.W)
 conversion_var = tk.StringVar(value="minidfa")
 conversion_combobox = ttk.Combobox(mainframe, textvariable=conversion_var, values=["minidfa", "dfa", "nfa"])
 conversion_combobox.grid(row=1, column=1, sticky=(tk.W, tk.E))
 
 dot_var = tk.BooleanVar()
-dot_checkbutton = ttk.Checkbutton(mainframe, text="Generate DOT files", variable=dot_var)
+dot_checkbutton = ttk.Checkbutton(mainframe, text="Generate DOT files", variable=dot_var, style="TButton")
 dot_checkbutton.grid(row=2, column=0, columnspan=2, sticky=tk.W)
 
 png_var = tk.BooleanVar()
-png_checkbutton = ttk.Checkbutton(mainframe, text="Generate PNG files", variable=png_var)
+png_checkbutton = ttk.Checkbutton(mainframe, text="Generate PNG files", variable=png_var, style="TButton")
 png_checkbutton.grid(row=3, column=0, columnspan=2, sticky=tk.W)
 
-generate_button = ttk.Button(mainframe, text="Generate", command=generate_automata)
-generate_button.grid(row=4, column=0, columnspan=2)
+generate_button = ttk.Button(mainframe, text="Generate", command=generate_automata, style="TButton")
+generate_button.grid(row=4, column=0, columnspan=2, pady=10)
 
-# Frame for displaying images
-image_frame = ttk.Frame(root, padding="10 10 20 20")
-image_frame.grid(row=1, column=0, sticky=(tk.W, tk.E, tk.N, tk.S))
+# Create a canvas with scrollbars for displaying images
+canvas = tk.Canvas(root, width=1200, height=600)
+scroll_y = tk.Scrollbar(root, orient="vertical", command=canvas.yview)
+scroll_x = tk.Scrollbar(root, orient="horizontal", command=canvas.xview)
+image_frame = ttk.Frame(canvas, padding="10 10 20 20")
+
+image_frame.bind(
+    "<Configure>",
+    lambda e: canvas.configure(
+        scrollregion=canvas.bbox("all")
+    )
+)
+
+canvas.create_window((0, 0), window=image_frame, anchor="nw")
+canvas.configure(yscrollcommand=scroll_y.set, xscrollcommand=scroll_x.set)
+
+canvas.grid(row=1, column=0, sticky="nsew")
+scroll_y.grid(row=1, column=1, sticky="ns")
+scroll_x.grid(row=2, column=0, sticky="ew")
 
 # Configure resizing behavior
 root.columnconfigure(0, weight=1)
