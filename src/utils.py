@@ -29,7 +29,7 @@ def dump(automaton, filename):
         file.write('rankdir=LR;\n')  # Left to right layout
         file.write('node [shape=circle, fontname="Helvetica", fontsize=12];\n')
         for state in automaton.states:
-            shape = 'doublecircle' if hasattr(automaton, 'accept_states') and state in automaton.accept_states else 'circle'
+            shape = 'doublecircle' if hasattr(automaton, 'final_states') and state in automaton.final_states else 'circle'
             file.write(f'{state} [shape={shape}];\n')
         for (start_state, symbol), end_states in automaton.transitions.items():
             for end_state in end_states:
