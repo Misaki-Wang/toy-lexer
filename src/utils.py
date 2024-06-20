@@ -22,3 +22,16 @@ def clear_directory(directory):
             os.unlink(file_path)
         elif os.path.isdir(file_path):
             shutil.rmtree(file_path)
+
+def dump(automaton, filename):
+    with open(filename, 'w') as file:
+        file.write('digraph G {\n')
+        file.write('rankdir=LR;\n')  # Left to right layout
+        file.write('node [shape=circle, fontname="Helvetica", fontsize=12];\n')
+        for state in automaton.states:
+            shape = 'doublecircle' if hasattr(automaton, 'accept_states') and state in automaton.accept_states else 'circle'
+            file.write(f'{state} [shape={shape}];\n')
+        for (start_state, symbol), end_states in automaton.transitions.items():
+            for end_state in end_states:
+                file.write(f'{start_state} -> {end_state} [label="{symbol}"];\n')
+        file.write('}\n')

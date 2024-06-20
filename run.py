@@ -2,7 +2,7 @@ import sys
 import os
 import argparse
 from src import regex, nfa_to_dfa, dfa_minimizer
-from src.utils import get_dot_file_path, get_image_file_path, clear_directory
+from src.utils import get_dot_file_path, get_image_file_path, clear_directory, dump
 
 # Ensure the res/dot and res/png directories exist
 os.makedirs('res/dot', exist_ok=True)
@@ -31,7 +31,7 @@ def main():
         if args.dot:
             nfa_dot_path = get_dot_file_path('nfa.dot')
             print(nfa_dot_path)
-            nfa.dump(open(nfa_dot_path, 'w'))
+            dump(nfa, nfa_dot_path)
         
         if args.conversion in ['minidfa', 'dfa']:
             # Convert the NFA to a DFA
@@ -40,16 +40,16 @@ def main():
             # Save the DFA to a DOT file if requested
             if args.dot:
                 dfa_dot_path = get_dot_file_path('dfa.dot')
-                dfa.dump(open(dfa_dot_path, 'w'))
+                dump(dfa, dfa_dot_path)
             
             if args.conversion == 'minidfa':
-                # Minimize the DFAS
+                # Minimize the DFA
                 mindfa = dfa_minimizer.minimize(dfa)
                 
                 # Save the minimized DFA to a DOT file if requested
                 if args.dot:
                     mindfa_dot_path = get_dot_file_path('mindfa.dot')
-                    mindfa.dump(open(mindfa_dot_path, 'w'))
+                    dump(mindfa, mindfa_dot_path)
         
         # Optionally convert DOT files to PNG files
         if args.png:
