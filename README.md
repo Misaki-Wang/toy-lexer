@@ -28,7 +28,7 @@ Output:
 
 `nfa_to_dfa.py` draws the NFA and DFA of the regex (as specified in `argv[1]`) in `nfa.dot` and `dfa.dot`
 
-    $ python regex.py '([a-c]b?|ad)'
+    $ python dfa_to_nfa.py '([a-c]b?|ad)'
     $ dot -Tpng ./nfa.dot -o nfa.png
     $ dot -Tpng ./dfa.dot -o dfa.png
 
@@ -39,7 +39,7 @@ DFA:
 
 ## Component: DFA Minimizer (Depends on all the Components Above)
 
-    $ python regex.py '([a-c]b?|ad)'
+    $ python dfa_minimizer.py '([a-c]b?|ad)'
     $ dot -Tpng ./mindfa.dot -o mindfa.png
 
 Output:
