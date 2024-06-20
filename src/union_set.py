@@ -1,6 +1,3 @@
-#!/usr/bin/env python3
-
-
 class UnionSet:
     def __init__(self, num):
         self._arr = [i for i in range(num)]

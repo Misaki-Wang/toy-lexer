@@ -1,5 +1,4 @@
-#!/usr/bin/env python3
-from fsa import FSA
+from .fsa import FSA
 from collections import defaultdict
 
 
@@ -107,14 +106,15 @@ def main():
     import sys
     import regex
     from utils import get_dot_file_path
-    
     nfa = regex.parse(sys.argv[1])
+    # Save the NFA to a DOT file
     nfa_dot_path = get_dot_file_path('nfa.dot')
     nfa.dump(open(nfa_dot_path, 'w'))
-    
+
+    # Convert the NFA to a DFA
     dfa = convert(nfa)
+    # Save the DFA to a DOT file
     dfa_dot_path = get_dot_file_path('dfa.dot')
     dfa.dump(open(dfa_dot_path, 'w'))
-
 if __name__ == '__main__':
     main()

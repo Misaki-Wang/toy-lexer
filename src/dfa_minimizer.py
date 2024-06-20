@@ -1,5 +1,4 @@
-#!/usr/bin/env python3
-from fsa import FSA
+from .fsa import FSA
 
 
 class _Minimizer:
