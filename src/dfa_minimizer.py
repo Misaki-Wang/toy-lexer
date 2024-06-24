@@ -1,7 +1,8 @@
 from .fsa import FSA
 
-
+# 最小化DFA的类
 class _Minimizer:
+    # 最小化方法
     def minimize(self, dfa: FSA, final_sets):
         self.dfa = dfa
         self.final_sets = final_sets
@@ -9,11 +10,12 @@ class _Minimizer:
                        for i in range(len(self.dfa.states))]
         self.combinable = [[True] * len(self.dfa.states)
                            for i in range(len(self.dfa.states))]
-        self.mark_uncombinable()
-        self.calculate_dependency()
-        new_states, to_new_state = self.relabel()
-        return self.build_min_dfa(new_states, to_new_state)
+        self.mark_uncombinable()  # 标记不可合并的状态对
+        self.calculate_dependency()  # 计算依赖关系
+        new_states, to_new_state = self.relabel()  # 重新标记状态
+        return self.build_min_dfa(new_states, to_new_state)  # 构建最小化DFA
 
+    # 标记不可合并的状态对
     def mark_uncombinable(self):
         final_states = set()
         for final_set in self.final_sets:
@@ -33,6 +35,7 @@ class _Minimizer:
                         else:
                             self.combinable[x_elem][y_elem] = False
 
+    # 标记状态对为不可合并
     def mark(self, i, j):
         if self.combinable[i][j] is False:
             return
@@ -41,6 +44,7 @@ class _Minimizer:
         for x, y in self.affect[i][j]:
             self.mark(x, y)
 
+    # 处理状态对，检查其依赖关系
     def process_state(self, x, y):
         x_edges = dict([(t.val, t.dst) for t in self.dfa.states[x].edges])
         y_edges = dict([(t.val, t.dst) for t in self.dfa.states[y].edges])
@@ -65,11 +69,13 @@ class _Minimizer:
         for x_dst, y_dst in dependency:
             self.affect[x_dst][y_dst].append((x, y))
 
+    # 计算依赖关系
     def calculate_dependency(self):
         for i in range(len(self.dfa.states)):
             for j in range(i + 1, len(self.dfa.states)):
                 self.process_state(i, j)
 
+    # 重新标记状态
     def relabel(self):
         processed = [False] * len(self.dfa.states)
         to_new_state = [-1] * len(self.dfa.states)
@@ -89,6 +95,7 @@ class _Minimizer:
                     to_new_state[j] = len(new_states) - 1
         return new_states, to_new_state
 
+    # 构建最小化的DFA
     def build_min_dfa(self, new_states, to_new_state):
         dfa = FSA()
         for i in range(len(new_states) - 1):
@@ -96,45 +103,45 @@ class _Minimizer:
 
         new_final_sets = [set() for i in range(len(self.final_sets))]
         for src_idx, old_states in enumerate(new_states):
-            # Mark the new state if it's in final states
+            # 标记新状态是否为终止状态
             for final_set_index, final_set in enumerate(self.final_sets):
                 if old_states.issubset(final_set):
                     new_final_sets[final_set_index].add(src_idx)
                     dfa.add_final(src_idx)
-            # Add the edges
+            # 添加边
             for edge in self.dfa.states[tuple(old_states)[0]].edges:
                 dfa.add_edge(src_idx, to_new_state[edge.dst], edge.val)
 
         return dfa, new_final_sets
 
-
+# 最小化DFA的外部接口函数
 def minimize(dfa: FSA, final_sets=None):
     if final_sets is None:
         return _Minimizer().minimize(dfa, (set(dfa.finals),))[0]
     return _Minimizer().minimize(dfa, final_sets)
 
-
+# 主函数，用于从命令行解析正则表达式并进行NFA到DFA的转换和最小化
 def main():
     import sys
     import regex
     import nfa_to_dfa
     from utils import get_dot_file_path
 
-    # Parse the regular expression from the command line argument
+    # 从命令行参数解析正则表达式
     nfa = regex.parse(sys.argv[1])
-    # Save the NFA to a DOT file
+    # 将NFA保存为DOT文件
     nfa_dot_path = get_dot_file_path('nfa.dot')
     nfa.dump(open(nfa_dot_path, 'w'))
 
-    # Convert the NFA to a DFA
+    # 将NFA转换为DFA
     dfa = nfa_to_dfa.convert(nfa)
-    # Save the DFA to a DOT file
+    # 将DFA保存为DOT文件
     dfa_dot_path = get_dot_file_path('dfa.dot')
     dfa.dump(open(dfa_dot_path, 'w'))
 
-    # Minimize the DFA
+    # 最小化DFA
     mindfa = minimize(dfa)
-    # Save the minimized DFA to a DOT file
+    # 将最小化DFA保存为DOT文件
     mindfa_dot_path = get_dot_file_path('mindfa.dot')
     mindfa.dump(open(mindfa_dot_path, 'w'))
 

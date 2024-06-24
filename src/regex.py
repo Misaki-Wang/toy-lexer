@@ -1,7 +1,7 @@
 from .fsa import FSA
 # simple: char | range | '(' regexp ')'
 #
-# repeating: simple '*'
+# repeating: simple '*' 
 #          | simple '+'
 #          | simple '?'
 #          | simple
@@ -12,34 +12,38 @@ from .fsa import FSA
 # regexp: sequence '|' regexp
 #       | sequence
 
-
+# 解析器类，用于将正则表达式解析为有限状态自动机（FSA）
 class _Parser:
-    FORBIDDEN_CHAR = "+*?|()[]"
+    FORBIDDEN_CHAR = "+*?|()[]"  # 禁止直接使用的字符
 
+    # 解析正则表达式入口方法
     def parse(self, regex: str):
-        self.pos = 0
-        self.regex = regex
-        self.maxpos = len(self.regex)
-        return self.parse_regexp()
+        self.pos = 0  # 当前解析位置
+        self.regex = regex  # 正则表达式字符串
+        self.maxpos = len(self.regex)  # 正则表达式的最大位置
+        return self.parse_regexp()  # 解析正则表达式
 
+    # 查看当前字符
     def peek(self):
         if self.pos < len(self.regex):
             return self.regex[self.pos]
         return chr(0)
 
+    # 解析字符
     def parse_char(self):
         if self.peek() in self.FORBIDDEN_CHAR:
             raise SyntaxError("Unexpected symbol " + self.peek())
 
         char = self.regex[self.pos]
-        if char == '\\':
-            char = {'r': '\r', 'n': '\r', 'v': '\v'}.get(
+        if char == '\\':  # 处理转义字符
+            char = {'r': '\r', 'n': '\n', 'v': '\v'}.get(
                 self.regex[self.pos + 1], self.regex[self.pos + 1])
             self.pos += 1
 
         self.pos += 1
         return char
 
+    # 解析字符范围
     def parse_range(self):
         if self.regex[self.pos] != '[':
             return None
@@ -53,7 +57,7 @@ class _Parser:
                 self.pos += 1
                 return fsa
             char = self.parse_char()
-            if self.peek() == '-':
+            if self.peek() == '-':  # 处理字符范围
                 self.parse_char()
                 next_char = self.parse_char()
                 if ord(next_char) >= ord(char):
@@ -63,8 +67,9 @@ class _Parser:
                 fsa.add_edge(0, final, char)
         raise SyntaxError("Missing ]")
 
+    # 解析简单表达式
     def parse_simple(self):
-        # Situation: '(' regexp ')'
+        # 处理 '(' regexp ')'
         if self.peek() == '(':
             pos = self.pos
             self.pos += 1
@@ -81,17 +86,18 @@ class _Parser:
                 else:
                     self.pos = pos
 
-        # Situation: range
+        # 处理字符范围
         fsa = self.parse_range()
         if fsa:
             return fsa
 
-        # Situation: char
+        # 处理单个字符
         fsa = FSA()
         final = fsa.add_final_state()
         fsa.add_edge(0, final, self.parse_char())
         return fsa
 
+    # 解析重复表达式
     def parse_repeating(self):
         subfsa = self.parse_simple()
         fsa = subfsa.duplicate()
@@ -103,6 +109,7 @@ class _Parser:
             self.pos += 1
         return fsa
 
+    # 解析序列
     def parse_sequence(self):
         fsa = None
         while self.pos < self.maxpos:
@@ -118,6 +125,7 @@ class _Parser:
                 fsa = subfsa
         return fsa
 
+    # 解析正则表达式
     def parse_regexp(self):
         fsa = FSA()
         final = fsa.add_final_state()
@@ -134,17 +142,17 @@ class _Parser:
             if self.peek() == '|':
                 self.pos += 1
                 continue
-            if self.peek == chr(0) or self.peek() in self.FORBIDDEN_CHAR:
+            if self.peek() == chr(0) or self.peek() in self.FORBIDDEN_CHAR:
                 return fsa
 
         return fsa
 
-
+# 外部接口函数，解析正则表达式并返回FSA
 def parse(regex: str) -> FSA:
     parser = _Parser()
     return parser.parse(regex)
 
-
+# 主函数，用于从命令行解析正则表达式并生成对应的FSA
 def main():
     import sys
     from utils import get_dot_file_path

@@ -1,29 +1,32 @@
 from .fsa import FSA
 from collections import defaultdict
 
-
+# NFA到DFA的转换类
 class _NFAToDFA:
+    # 转换方法
     def convert(self, nfa: FSA, final_sets=None):
         self.nfa = nfa
-        self.closure_array = self.init_closure()
-        set_graph = self.nfa_to_dfa_set_graph()
-        return self.dfa_set_graph_to_dfa(set_graph, final_sets)
+        self.closure_array = self.init_closure()  # 初始化闭包数组
+        set_graph = self.nfa_to_dfa_set_graph()  # 构建DFA集合图
+        return self.dfa_set_graph_to_dfa(set_graph, final_sets)  # 将集合图转换为DFA
 
+    # 初始化闭包数组
     def init_closure(self):
-        result = [{i} for i in range(len(self.nfa.states))]
+        result = [{i} for i in range(len(self.nfa.states))]  # 初始每个状态的闭包仅包含其自身
         changed = True
         while changed:
             changed = False
             for i in range(len(self.nfa.states)):
                 closure = set(result[i])
                 for edge in self.nfa.states[i].edges:
-                    if edge.val == 0:
+                    if edge.val == 0:  # 处理epsilon边
                         closure.update(result[edge.dst])
                 if closure != result[i]:
                     result[i] = closure
                     changed = True
         return result
 
+    # 获取状态集合的闭包
     def closure(self, states):
         if hasattr(states, '__next__'):
             result = set()
@@ -33,6 +36,7 @@ class _NFAToDFA:
         else:
             return self.closure_array[states]
 
+    # 获取目标状态集合
     def get_dst_sets(self, src_states):
         result = defaultdict(set)  # result[val] = dst_states
         for state in src_states:
@@ -41,6 +45,7 @@ class _NFAToDFA:
                     result[edge.val].update(self.closure(edge.dst))
         return result
 
+    # 构建DFA的集合图
     def nfa_to_dfa_set_graph(self):
         set_graph = dict()  # set_graph[src_set][val] = dst_set
 
@@ -55,15 +60,17 @@ class _NFAToDFA:
                     set_new.add(frozen_dst_set)
         return set_graph
 
+    # 调试用，打印集合图
     def debug_print_set_graph(self, set_graph):
         for src, edges in set_graph.items():
             for val, dst in edges.items():
                 print(set(src), val, set(dst))
 
+    # 将集合图转换为DFA
     def dfa_set_graph_to_dfa(self, set_graph, final_sets):
         dfa = FSA()
 
-        # Label the sets
+        # 给集合打标签
         set_label = dict()
         new_final_sets = [set() for i in range(len(final_sets))]
         for index, state in enumerate(set_graph):
@@ -83,10 +90,10 @@ class _NFAToDFA:
                         new_state = dfa.add_final_state()
                         set_label[state] = new_state
                         new_final_sets[final_set_index].add(new_state)
-                    # High priority final set is found
+                    # 高优先级的终止状态集已找到
                     break
 
-        # Add the edges
+        # 添加边
         for src_state_set, src_state in set_graph.items():
             for val, dst_state_set in src_state.items():
                 src_label = set_label[frozenset(src_state_set)]
@@ -95,26 +102,27 @@ class _NFAToDFA:
 
         return dfa, new_final_sets
 
-
+# 外部接口函数，将NFA转换为DFA
 def convert(nfa: FSA, final_sets=None):
     if final_sets is None:
         return _NFAToDFA().convert(nfa, (set(nfa.finals),))[0]
     return _NFAToDFA().convert(nfa, final_sets)
 
-
+# 主函数，用于从命令行解析正则表达式并进行NFA到DFA的转换
 def main():
     import sys
     import regex
     from utils import get_dot_file_path
     nfa = regex.parse(sys.argv[1])
-    # Save the NFA to a DOT file
+    # 将NFA保存为DOT文件
     nfa_dot_path = get_dot_file_path('nfa.dot')
     nfa.dump(open(nfa_dot_path, 'w'))
 
-    # Convert the NFA to a DFA
+    # 将NFA转换为DFA
     dfa = convert(nfa)
-    # Save the DFA to a DOT file
+    # 将DFA保存为DOT文件
     dfa_dot_path = get_dot_file_path('dfa.dot')
     dfa.dump(open(dfa_dot_path, 'w'))
+
 if __name__ == '__main__':
     main()
