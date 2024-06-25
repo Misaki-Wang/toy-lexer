@@ -126,3 +126,21 @@ def main():
 
 if __name__ == '__main__':
     main()
+
+"""
+基于经典的子集构造法（Subset Construction），也称为 Powerset Construction。这种方法通过构造新的状态和转换，使每个 NFA 的状态集合对应 DFA 的一个状态，从而实现转换。以下是该文件中使用的具体算法设计思想的详细解析。
+
+子集构造法（Subset Construction）
+子集构造法是将 NFA 转换为 DFA 的一种标准方法。其核心思想是使用 NFA 的状态集合来构建 DFA 的状态。
+
+闭包计算（ε-Closure）：
+    计算每个状态及其通过 ε 边（epsilon 边）能够到达的所有状态的集合。
+    这一步确保 DFA 能够处理 NFA 中的 ε 转换。
+
+状态转换（Transition）：
+    对于每个新的 DFA 状态（由 NFA 状态的集合组成），计算它在每个输入符号下的转换。
+    通过跟踪这些转换，构建 DFA 的状态和边。
+
+处理终止状态（Final States）：
+    如果 NFA 的任何终止状态包含在某个 DFA 状态中，则将该 DFA 状态标记为终止状态。
+"""

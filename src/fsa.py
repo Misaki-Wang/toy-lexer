@@ -57,18 +57,18 @@ class FSA:
     def duplicate(self):
         return deepcopy(self)
 
-    # 将FSA的结构输出到文件，格式为Graphviz的dot文件
-    def dump(self, f):
-        f.write('digraph {\n')
-        for final in self.finals:
-            f.write('\t' + str(final) + '[shape="box"]\n')  # 输出终止状态
+    # # 将FSA的结构输出到文件，格式为Graphviz的dot文件
+    # def dump(self, f):
+    #     f.write('digraph {\n')
+    #     for final in self.finals:
+    #         f.write('\t' + str(final) + '[shape="box"]\n')  # 输出终止状态
 
-        for state_index, state in enumerate(self.states):
-            for edge in state.edges:
-                disp = '(eps)' if edge.val == 0 else edge.val  # 边的标签
-                f.write('\t' + str(state_index) + ' -> ' + str(edge.dst)
-                        + ' [label="' + disp + '"];\n')  # 输出状态和边
-        f.write('}\n')
+    #     for state_index, state in enumerate(self.states):
+    #         for edge in state.edges:
+    #             disp = '(eps)' if edge.val == 0 else edge.val  # 边的标签
+    #             f.write('\t' + str(state_index) + ' -> ' + str(edge.dst)
+    #                     + ' [label="' + disp + '"];\n')  # 输出状态和边
+    #     f.write('}\n')
 
     # 从正则表达式构建FSA
     def from_regex(regex: str):

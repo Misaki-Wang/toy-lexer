@@ -142,8 +142,10 @@ class _Parser:
             if self.peek() == '|':
                 self.pos += 1
                 continue
-            if self.peek() == chr(0) or self.peek() in self.FORBIDDEN_CHAR:
+            if (self.peek() == chr(0) or    # chr(0) == NULL
+                self.peek() in self.FORBIDDEN_CHAR):
                 return fsa
+
 
         return fsa
 
@@ -163,3 +165,40 @@ def main():
 
 if __name__ == '__main__':
     main()
+
+"""
+递归下降解析（Recursive Descent Parsing）
+递归下降解析是一种自顶向下的解析方法，广泛用于解析上下文无关文法。它使用一组递归函数来处理每个非终结符，并根据输入字符调用相应的函数，以实现整个输入串的解析。
+
+具体实现
+
+分解正则表达式的各个组成部分：
+    简单表达式（simple）：包括单个字符、字符范围和括号中的子表达式。
+    重复表达式（repeating）：包括简单表达式后面跟着 *、+ 或 ? 运算符。
+    序列（sequence）：包括一个或多个重复表达式的串联。
+    选择（regexp）：包括一个或多个序列之间使用 | 运算符的选择。
+
+函数调用层次结构：
+    parse_regexp 调用 parse_sequence
+    parse_sequence 调用 parse_repeating
+    parse_repeating 调用 parse_simple
+    parse_simple 调用 parse_range
+    parse_range 调用 parse_char
+这种自顶向下的解析方法通过递归函数调用，逐步解析并处理正则表达式的各个组成部分。
+
+
+Thompson 构造法（Thompson's Construction）
+Thompson 构造法是一种将正则表达式转换为非确定性有限自动机（NFA）的经典算法。它通过构建基本的自动机，并组合这些基本自动机来表示正则表达式中的各种操作（如连接、选择和重复）。
+
+具体实现
+
+基本构造：
+    单个字符：使用 parse_char 方法解析单个字符，并构建一个简单的 NFA，包含一个起始状态和一个终止状态，以及一个从起始状态到终止状态的字符边。
+    字符范围：使用 parse_range 方法解析字符范围，并构建相应的 NFA，包含多个从起始状态到终止状态的字符边。
+
+组合操作：
+    重复操作：使用 parse_repeating 方法处理 *、+ 和 ? 运算符，通过添加 epsilon 边，将基本 NFA 扩展为支持重复的 NFA。
+    顺序操作：使用 parse_sequence 方法处理字符的顺序排列，通过将多个 NFA 依次连接起来，构建顺序操作的 NFA。
+    选择操作：使用 parse_regexp 方法处理选择运算符 |，通过构建新的起始状态和终止状态，并添加相应的 epsilon 边，将多个 NFA 组合为一个选择操作的 NFA。
+通过这些基本构造和组合操作，Thompson 构造法实现了将正则表达式转换为等价的 NFA。
+"""
