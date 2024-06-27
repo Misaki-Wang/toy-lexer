@@ -61,16 +61,16 @@ class _NFAToDFA:
         return set_graph
 
     # 调试用，打印集合图
-    def debug_print_set_graph(self, set_graph):
-        for src, edges in set_graph.items():
-            for val, dst in edges.items():
-                print(set(src), val, set(dst))
+    # def debug_print_set_graph(self, set_graph):
+    #     for src, edges in set_graph.items():
+    #         for val, dst in edges.items():
+    #             print(set(src), val, set(dst))
 
     # 将集合图转换为DFA
     def dfa_set_graph_to_dfa(self, set_graph, final_sets):
         dfa = FSA()
 
-        # 给集合打标签
+        # 给集合打标签，确定DFA中的final_sets
         set_label = dict()
         new_final_sets = [set() for i in range(len(final_sets))]
         for index, state in enumerate(set_graph):
@@ -128,10 +128,8 @@ if __name__ == '__main__':
     main()
 
 """
-基于经典的子集构造法（Subset Construction），也称为 Powerset Construction。这种方法通过构造新的状态和转换，使每个 NFA 的状态集合对应 DFA 的一个状态，从而实现转换。以下是该文件中使用的具体算法设计思想的详细解析。
-
-子集构造法（Subset Construction）
-子集构造法是将 NFA 转换为 DFA 的一种标准方法。其核心思想是使用 NFA 的状态集合来构建 DFA 的状态。
+基于经典的子集构造法（Subset Construction），也称为 Powerset Construction。通过构造新的状态和转换，
+使每个 NFA 的状态集合对应 DFA 的一个状态，从而实现转换。
 
 闭包计算（ε-Closure）：
     计算每个状态及其通过 ε 边（epsilon 边）能够到达的所有状态的集合。
@@ -143,4 +141,15 @@ if __name__ == '__main__':
 
 处理终止状态（Final States）：
     如果 NFA 的任何终止状态包含在某个 DFA 状态中，则将该 DFA 状态标记为终止状态。
+
+init_closure 遍历每个状态，计算其 epsilon 闭包，
+    并不断更新直到所有状态的闭包都不再变化。
+    
+closure 获取一个状态集合的闭包，即通过 epsilon 边可以到达的所有状态。
+
+get_dst_sets 计算从一个状态集合出发，通过特定字符到达的目标状态集合。
+
+nfa_to_dfa_set_graph 构建状态集合图，表示从一个状态集合到另一个状态集合的转换关系。
+
+dfa_set_graph_to_dfa 将状态集合图转换为实际的 DFA，包括打标签、标记终止状态、添加边等步骤。
 """
